@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FreeTemp — Temporary Email</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📧</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /*═══════════════════════════════════════════════
+      RESET & ROOT
+    ═══════════════════════════════════════════════*/
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary: #06060b;
+      --bg-secondary: #0c0c14;
+      --bg-card: #111120;
+      --bg-card-hover: #16162d;
+      --bg-glass: rgba(17, 17, 32, 0.75);
+      --bg-input: #0d0d1a;
+      --border-color: rgba(139, 92, 246, 0.12);
+      --border-active: rgba(139, 92, 246, 0.45);
+      --text-primary: #ededf0;
+      --text-secondary: #a1a1b5;
+      --text-muted: #6b6b80;
+      --accent: #8b5cf6;
+      --accent-light: #a78bfa;
+      --accent-dark: #7c3aed;
+      --accent-glow: rgba(139, 92, 246, 0.25);
+      --cyan: #06b6d4;
+      --cyan-glow: rgba(6, 182, 212, 0.25);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --info: #3b82f6;
+      --pink: #ec4899;
+      --gradient-main: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+      --gradient-btn: linear-gradient(135deg, #7c3aed 0%, #6366f1 50%, #8b5cf6 100%);
+      --gradient-pink: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-2xl: 28px;
+      --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
+      --shadow-md: 0 4px 24px rgba(0,0,0,0.5);
+      --shadow-lg: 0 8px 40px rgba(0,0,0,0.6);
+      --shadow-glow: 0 0 40px rgba(139, 92, 246, 0.12);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-fast: all 0.15s ease;
+      --transition-spring: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /*═══════════════════════════════════════════════
+      ANIMATED BACKGROUND
+    ═══════════════════════════════════════════════*/
+    .bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .bg-canvas::before {
+      content: '';
+      position: absolute;
+      top: -60%; left: -60%;
+      width: 220%; height: 220%;
+      background:
+        radial-gradient(ellipse 600px 400px at 25% 25%, rgba(139, 92, 246, 0.07) 0%, transparent 70%),
+        radial-gradient(ellipse 500px 500px at 75% 75%, rgba(6, 182, 212, 0.05) 0%, transparent 70%),
+        radial-gradient(ellipse 400px 300px at 50% 10%, rgba(236, 72, 153, 0.04) 0%, transparent 70%);
+      animation: bgDrift 25s ease-in-out infinite alternate;
+    }
+
+    .bg-canvas::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(139, 92, 246, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(139, 92, 246, 0.025) 1px, transparent 1px);
+      background-size: 70px 70px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, black, transparent);
+    }
+
+    @keyframes bgDrift {
+      0%   { transform: translate(0, 0) rotate(0deg) scale(1); }
+      50%  { transform: translate(-3%, 2%) rotate(2deg) scale(1.02); }
+      100% { transform: translate(2%, -1%) rotate(-1deg) scale(1.01); }
+    }
+
+    /* Floating orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.12;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb-1 { width: 400px; height: 400px; background: var(--accent); top: -100px; right: -100px; animation: orbFloat1 18s ease-in-out infinite; }
+    .orb-2 { width: 300px; height: 300px; background: var(--cyan); bottom: -80px; left: -80px; animation: orbFloat2 22s ease-in-out infinite; }
+    .orb-3 { width: 250px; height: 250px; background: var(--pink); top: 40%; left: 60%; animation: orbFloat3 15s ease-in-out infinite; }
+
+    @keyframes orbFloat1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-60px, 80px); } }
+    @keyframes orbFloat2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(70px, -50px); } }
+    @keyframes orbFloat3 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-40px, -60px); } }
+
+    /*═══════════════════════════════════════════════
+      LAYOUT
+    ═══════════════════════════════════════════════*/
+    .app {
+      position: relative;
+      z-index: 1;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 16px 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /*═══════════════════════════════════════════════
+      HEADER
+    ═══════════════════════════════════════════════*/
+    .header {
+      text-align: center;
+      padding: 48px 0 28px;
+    }
+
+    .logo-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .logo-badge {
+      width: 56px; height: 56px;
+      background: var(--gradient-main);
+      border-radius: var(--radius-lg);
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      box-shadow: 0 0 30px rgba(139,92,246,0.25);
+      animation: logoBreathe 4s ease-in-out infinite;
+      position: relative;
+    }
+    .logo-badge::after {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: inherit;
+      background: var(--gradient-main);
+      z-index: -1;
+      opacity: 0.4;
+      filter: blur(12px);
+    }
+
+    @keyframes logoBreathe {
+      0%,100% { box-shadow: 0 0 24px rgba(139,92,246,0.2); transform: scale(1); }
+      50%     { box-shadow: 0 0 48px rgba(139,92,246,0.35); transform: scale(1.04); }
+    }
+
+    .logo-name {
+      font-size: 2.6rem;
+      font-weight: 900;
+      background: var(--gradient-main);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -1px;
+    }
+
+    .header-sub {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      font-weight: 400;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    /*═══════════════════════════════════════════════
+      INPUT SECTION
+    ═══════════════════════════════════════════════*/
+    .input-section {
+      max-width: 740px;
+      margin: 0 auto 24px;
+      width: 100%;
+    }
+
+    .input-card {
+      background: var(--bg-glass);
+      backdrop-filter: blur(24px) saturate(1.4);
+      -webkit-backdrop-filter: blur(24px) saturate(1.4);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-2xl);
+      padding: 28px 28px 22px;
+      box-shadow: var(--shadow-lg), var(--shadow-glow);
+      transition: var(--transition);
+    }
+    .input-card:focus-within {
+      border-color: var(--border-active);
+      box-shadow: var(--shadow-lg), 0 0 60px rgba(139,92,246,0.15);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    .input-wrapper .ico {
+      position: absolute;
+      left: 18px; top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      transition: var(--transition);
+      pointer-events: none;
+    }
+
+    .email-input {
+      width: 100%;
+      padding: 17px 18px 17px 50px;
+      background: var(--bg-input);
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      color: var(--text-primary);
+      font-size: 1.05rem;
+      font-family: var(--font-mono);
+      font-weight: 500;
+      transition: var(--transition);
+      outline: none;
+    }
+    .email-input::placeholder {
+      color: var(--text-muted);
+      font-family: var(--font-sans);
+      font-weight: 400;
+    }
+    .email-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-glow);
+    }
+    .email-input:focus ~ .ico { color: var(--accent-light); }
+
+    /* Buttons */
+    .btn {
+      padding: 14px 24px;
+      border: none;
+      border-radius: var(--radius-lg);
+      font-size: 0.95rem;
+      font-weight: 600;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: var(--gradient-btn);
+      color: white;
+      box-shadow: 0 4px 16px rgba(124,58,237,0.35);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(124,58,237,0.45);
+    }
+
+    .btn-glass {
+      background: rgba(255,255,255,0.04);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(10px);
+    }
+    .btn-glass:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: var(--border-active);
+      color: var(--text-primary);
+    }
+
+    .btn-sm { padding: 9px 16px; font-size: 0.82rem; border-radius: var(--radius-sm); }
+    .btn-icon { padding: 14px; min-width: 50px; justify-content: center; }
+
+    .btn-success {
+      background: rgba(16,185,129,0.1);
+      color: var(--success);
+      border: 1px solid rgba(16,185,129,0.2);
+    }
+    .btn-success:hover { background: rgba(16,185,129,0.2); }
+
+    .btn-info {
+      background: rgba(59,130,246,0.1);
+      color: var(--info);
+      border: 1px solid rgba(59,130,246,0.2);
+    }
+    .btn-info:hover { background: rgba(59,130,246,0.2); }
+
+    .btn-danger {
+      background: rgba(239,68,68,0.1);
+      color: var(--danger);
+      border: 1px solid rgba(239,68,68,0.15);
+    }
+    .btn-danger:hover { background: rgba(239,68,68,0.2); }
+
+    .domain-select {
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      border-radius: var(--radius-sm);
+      background: var(--bg-input);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+      font-family: var(--font-mono);
+      outline: none;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .domain-select:focus, .domain-select:hover {
+      border-color: var(--border-active);
+      color: var(--text-primary);
+    }
+
+    .quick-bar {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    /*═══════════════════════════════════════════════
+      STATUS BAR
+    ═══════════════════════════════════════════════*/
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 740px;
+      margin: 0 auto 18px;
+      padding: 11px 20px;
+      background: var(--bg-glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      font-size: 0.85rem;
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: var(--transition-spring);
+      width: 100%;
+    }
+    .status-bar.show { opacity: 1; transform: translateY(0); }
+
+    .status-left { display: flex; align-items: center; gap: 10px; color: var(--text-secondary); }
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px rgba(16,185,129,0.5);
+      animation: dotPulse 2s ease-in-out infinite;
+    }
+    .status-dot.off { background: var(--warning); box-shadow: none; animation: none; }
+
+    @keyframes dotPulse {
+      0%,100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 0.83rem;
+    }
+    .toggle-track {
+      width: 38px; height: 20px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      position: relative;
+      transition: var(--transition);
+    }
+    .toggle-track.on {
+      background: var(--accent-dark);
+      border-color: var(--accent);
+    }
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: white;
+      top: 2px; left: 2px;
+      transition: var(--transition);
+    }
+    .toggle-track.on::after { left: 20px; }
+
+    /*═══════════════════════════════════════════════
+      WELCOME SCREEN
+    ═══════════════════════════════════════════════*/
+    .welcome {
+      text-align: center;
+      padding: 60px 20px;
+      flex: 1;
+    }
+
+    .welcome-icon {
+      font-size: 4.5rem;
+      margin-bottom: 20px;
+      display: inline-block;
+      animation: rocketFloat 3s ease-in-out infinite;
+    }
+    @keyframes rocketFloat {
+      0%,100% { transform: translateY(0) rotate(-5deg); }
+      50% { transform: translateY(-14px) rotate(5deg); }
+    }
+
+    .welcome h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .welcome p { color: var(--text-muted); max-width: 580px; margin: 0 auto 36px; line-height: 1.7; }
+    .welcome strong { color: var(--accent-light); font-weight: 600; font-family: var(--font-mono); font-size: 0.9em; }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    .feat {
+      background: var(--bg-glass);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: 28px 20px;
+      text-align: center;
+      transition: var(--transition);
+    }
+    .feat:hover {
+      border-color: var(--border-active);
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-glow);
+    }
+    .feat-icon { font-size: 2.4rem; margin-bottom: 12px; display: block; }
+    .feat-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; }
+    .feat-desc  { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
+
+    /*═══════════════════════════════════════════════
+      MAIN 2-COLUMN LAYOUT
+    ═══════════════════════════════════════════════*/
+    .main {
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: 18px;
+      flex: 1;
+      min-height: 520px;
+      opacity: 0;
+      transform: translateY(16px);
+      transition: var(--transition-spring);
+    }
+    .main.show { opacity: 1; transform: translateY(0); }
+
+    @media (max-width: 960px) { .main { grid-template-columns: 1fr; } }
+
+    .panel {
+      background: var(--bg-glass);
+      backdrop-filter: blur(20px) saturate(1.3);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .panel-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge {
+      background: var(--accent-dark);
+      color: white;
+      font-size: 0.72rem;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-weight: 700;
+      min-width: 22px;
+      text-align: center;
+    }
+
+    /*═══════════════════════════════════════════════
+      EMAIL LIST
+    ═══════════════════════════════════════════════*/
+    .list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px;
+    }
+    .list::-webkit-scrollbar { width: 5px; }
+    .list::-webkit-scrollbar-track { background: transparent; }
+    .list::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.2); border-radius: 3px; }
+
+    .mail-item {
+      padding: 16px 16px 14px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition-fast);
+      border: 1px solid transparent;
+      margin-bottom: 3px;
+      position: relative;
+    }
+    .mail-item:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-color);
+    }
+    .mail-item.active {
+      background: rgba(139,92,246,0.08);
+      border-color: var(--accent);
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+    .mail-item.unread .mail-from { color: #fff; }
+    .mail-item.unread::after {
+      content: '';
+      position: absolute;
+      right: 14px; top: 50%;
+      transform: translateY(-50%);
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    .mail-from {
+      font-weight: 600;
+      font-size: 0.92rem;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding-right: 20px;
+    }
+    .mail-subj {
+      font-size: 0.84rem;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .mail-time {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Codes badge in list */
+    .mail-codes {
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: rgba(139,92,246,0.06);
+      border: 1px dashed rgba(139,92,246,0.18);
+      border-radius: var(--radius-sm);
+    }
+    .codes-tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent-light);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .codes-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    .code-chip {
+      display: inline-block;
+      background: rgba(139,92,246,0.12);
+      border: 1px solid rgba(139,92,246,0.25);
+      border-radius: 8px;
+      padding: 5px 12px;
+      font-family: var(--font-mono);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--accent-light);
+      letter-spacing: 4px;
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+    .code-chip:hover {
+      background: rgba(139,92,246,0.22);
+      transform: scale(1.05);
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    /*═══════════════════════════════════════════════
+      EMAIL DETAIL
+    ═══════════════════════════════════════════════*/
+    .detail-head {
+      padding: 24px 24px 20px;
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+    .detail-subj {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-bottom: 16px;
+      line-height: 1.35;
+    }
+    .meta-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .meta-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.88rem;
+    }
+    .meta-label {
+      color: var(--text-muted);
+      min-width: 46px;
+      font-weight: 500;
+    }
+    .meta-val {
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      word-break: break-all;
+    }
+    .detail-btns {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .detail-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px 24px;
+    }
+    .detail-body::-webkit-scrollbar { width: 5px; }
+    .detail-body::-webkit-scrollbar-track { background: transparent; }
+    .detail-body::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.2); border-radius: 3px; }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 14px;
+      background: var(--bg-input);
+      border-radius: var(--radius-sm);
+      padding: 3px;
+      width: fit-content;
+    }
+    .tab {
+      padding: 7px 16px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: var(--transition-fast);
+      background: transparent;
+      color: var(--text-muted);
+      border: none;
+      font-family: var(--font-sans);
+      font-weight: 600;
+    }
+    .tab.active { background: var(--accent-dark); color: white; }
+    .tab:hover:not(.active) { color: var(--text-secondary); }
+
+    .body-frame {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      padding: 0;
+      min-height: 200px;
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+    }
+    .body-frame.text-mode {
+      padding: 20px;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      line-height: 1.8;
+      color: var(--text-secondary);
+    }
+    .body-frame iframe {
+      width: 100%;
+      min-height: 450px;
+      border: none;
+      background: white;
+      border-radius: var(--radius-md);
+      display: block;
+    }
+
+    /*═══════════════════════════════════════════════
+      EMPTY STATES
+    ═══════════════════════════════════════════════*/
+    .empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 50px 24px;
+      text-align: center;
+      height: 100%;
+      min-height: 280px;
+    }
+    .empty-ico {
+      font-size: 3.6rem;
+      margin-bottom: 18px;
+      opacity: 0.55;
+      animation: emptyBob 3.5s ease-in-out infinite;
+    }
+    @keyframes emptyBob {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .empty-h { font-size: 1.1rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; }
+    .empty-p { color: var(--text-muted); font-size: 0.88rem; max-width: 280px; }
+
+    /*═══════════════════════════════════════════════
+      TOASTS
+    ═══════════════════════════════════════════════*/
+    .toasts {
+      position: fixed;
+      top: 20px; right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .toast {
+      pointer-events: auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 13px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: var(--shadow-lg);
+      backdrop-filter: blur(16px);
+      min-width: 260px;
+      font-size: 0.9rem;
+      animation: tIn 0.4s var(--transition-spring);
+    }
+    .toast.ok  { border-left: 3px solid var(--success); }
+    .toast.err { border-left: 3px solid var(--danger); }
+    .toast.inf { border-left: 3px solid var(--info); }
+    .toast.bye { animation: tOut 0.3s ease forwards; }
+
+    @keyframes tIn  { from { opacity:0; transform:translateX(100%); } to { opacity:1; transform:translateX(0); } }
+    @keyframes tOut { from { opacity:1; transform:translateX(0); } to { opacity:0; transform:translateX(100%); } }
+
+    /* New mail banner */
+    .new-banner {
+      position: fixed;
+      top: 14px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--gradient-pink);
+      color: white;
+      padding: 11px 28px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      box-shadow: var(--shadow-lg);
+      z-index: 10000;
+      animation: bannerDrop 0.5s var(--transition-spring);
+    }
+    @keyframes bannerDrop {
+      from { opacity:0; transform:translateX(-50%) translateY(-120%); }
+      to   { opacity:1; transform:translateX(-50%) translateY(0); }
+    }
+
+    .flash { animation: flashBg 1s ease; }
+    @keyframes flashBg {
+      0% { background: rgba(139,92,246,0.2); }
+      100% { background: transparent; }
+    }
+
+    /*═══════════════════════════════════════════════
+      FOOTER
+    ═══════════════════════════════════════════════*/
+    .footer {
+      text-align: center;
+      padding: 28px 0;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      border-top: 1px solid var(--border-color);
+      margin-top: 32px;
+    }
+    kbd {
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+
+    /*═══════════════════════════════════════════════
+      RESPONSIVE
+    ═══════════════════════════════════════════════*/
+    @media (max-width: 768px) {
+      .header { padding: 28px 0 18px; }
+      .logo-name { font-size: 2rem; }
+      .input-card { padding: 20px; border-radius: var(--radius-xl); }
+      .input-row { flex-direction: column; }
+      .quick-bar { justify-content: center; }
+      .main { min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ════════ BG ════════ -->
+  <div class="bg-canvas"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- ════════ APP ════════ -->
+  <div class="app">
+
+    <!-- HEADER -->
+    <header class="header">
+      <div class="logo-wrap">
+        <div class="logo-badge">📧</div>
+        <span class="logo-name">TeeMPS</span>
+      </div>
+      <p class="header-sub">Temporary email, instantly. Paste any address and watch messages arrive in real-time.</p>
+    </header>
+
+    <!-- INPUT -->
+    <section class="input-section">
+      <div class="input-card">
+        <div class="input-row">
+          <div class="input-wrapper">
+            <input type="text" id="inp" class="email-input"
+                   placeholder="Masukkan email, misal: rayhana@agunglaparbu.ccwu.cc"
+                   autocomplete="off" spellcheck="false" />
+            <span class="ico">✉️</span>
+          </div>
+          <button class="btn btn-primary" id="btnGo" onclick="go()">
+            🔍 <span>Cek Inbox</span>
+          </button>
+        </div>
+        <div class="quick-bar">
+          <button class="btn btn-sm btn-success" onclick="genEmail()">🎲 Random Email</button>
+          <select id="domSelect" class="domain-select" title="Pilih domain untuk Random Email">
+            <option value="random">🌐 Acak (6 Domain)</option>
+            <option value="agunglaparbu.ccwu.cc">@agunglaparbu.ccwu.cc</option>
+            <option value="capcutmemberteam.cc.cd">@capcutmemberteam.cc.cd</option>
+            <option value="spongebob1876.de5.net">@spongebob1876.de5.net</option>
+            <option value="dkhsm.cc.cd">@dkhsm.cc.cd</option>
+            <option value="cancuters.de5.net">@cancuters.de5.net</option>
+            <option value="hidupjokowi.us.ci">@hidupjokowi.us.ci</option>
+          </select>
+          <button class="btn btn-sm btn-info" id="btnCopy" onclick="copyAddr()" style="display:none">📋 Copy Email</button>
+          <button class="btn btn-sm btn-danger" id="btnNuke" onclick="nukeAll()" style="display:none">🗑️ Hapus Semua</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATUS BAR -->
+    <div class="status-bar" id="sbar">
+      <div class="status-left">
+        <div class="status-dot" id="sDot"></div>
+        <span id="sTxt">Menunggu email baru…</span>
+      </div>
+      <label class="toggle-label" onclick="toggleAR()">
+        Auto-refresh
+        <div class="toggle-track on" id="arToggle"></div>
+      </label>
+    </div>
+
+    <!-- WELCOME -->
+    <div id="welcomeDiv" class="welcome">
+      <div class="welcome-icon">🚀</div>
+      <h2>Mulai dengan memasukkan alamat email</h2>
+      <p>Gunakan tombol <strong>Random Email</strong> atau masukkan alamat dengan domain <strong>@agunglaparbu.ccwu.cc</strong>, <strong>@capcutmemberteam.cc.cd</strong>, <strong>@spongebob1876.de5.net</strong>, <strong>@dkhsm.cc.cd</strong>, <strong>@cancuters.de5.net</strong>, atau <strong>@hidupjokowi.us.ci</strong>.</p>
+      <div class="features">
+        <div class="feat">
+          <span class="feat-icon">⚡</span>
+          <h3 class="feat-title">Instant Access</h3>
+          <p class="feat-desc">Langsung masukkan email, tanpa registrasi atau setup apapun</p>
+        </div>
+        <div class="feat">
+          <span class="feat-icon">🔄</span>
+          <h3 class="feat-title">Auto Refresh</h3>
+          <p class="feat-desc">Email baru muncul otomatis setiap 5 detik tanpa reload halaman</p>
+        </div>
+        <div class="feat">
+          <span class="feat-icon">🔑</span>
+          <h3 class="feat-title">Code Detection</h3>
+          <p class="feat-desc">Otomatis mendeteksi kode verifikasi & OTP dari email masuk</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main" id="mainDiv" style="display:none">
+      <!-- List -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="panel-title">📥 Inbox <span class="badge" id="countBadge">0</span></div>
+          <button class="btn btn-sm btn-glass" onclick="refresh()" title="Refresh (R)">🔄</button>
+        </div>
+        <div class="list" id="listDiv">
+          <div class="empty">
+            <div class="empty-ico">📭</div>
+            <h3 class="empty-h">Inbox Kosong</h3>
+            <p class="empty-p">Email yang masuk akan tampil di sini secara otomatis</p>
+          </div>
+        </div>
+      </div>
+      <!-- Detail -->
+      <div class="panel">
+        <div id="detailDiv">
+          <div class="empty">
+            <div class="empty-ico">👈</div>
+            <h3 class="empty-h">Pilih Email</h3>
+            <p class="empty-p">Klik email di daftar untuk melihat isinya</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      TeeMPS — Temporary Email Service &middot; Powered by Cloudflare Workers + D1<br>
+      <span style="font-size:0.76rem">Email otomatis terhapus setelah 24 jam &middot; <kbd>R</kbd> Refresh &middot; <kbd>Esc</kbd> Tutup &middot; <kbd>N</kbd> Input</span>
+    </footer>
+
+  </div>
+
+  <!-- TOASTS -->
+  <div class="toasts" id="toastBox"></div>
+
+  <script>
+  /* ═══════════════════════════════════════════════════════
+     CONFIG — Ganti URL ini dengan Worker URL kamu
+  ═══════════════════════════════════════════════════════ */
+  const API_BASE = 'https://teemps-tempmail.hanzstore0111.workers.dev';
+  const REFRESH_MS = 5000;
+  const DEFAULT_DOMAINS = [
+    'agunglaparbu.ccwu.cc',
+    'capcutmemberteam.cc.cd',
+    'spongebob1876.de5.net',
+    'dkhsm.cc.cd',
+    'cancuters.de5.net',
+    'hidupjokowi.us.ci'
+  ];
+
+  /* ═══════ STATE ═══════ */
+  let addr = '';
+  let mails = [];
+  let selId = null;
+  let arOn = true;
+  let arTimer = null;
+  let prevCount = 0;
+  let readSet = new Set();
+  let domains = [...DEFAULT_DOMAINS];
+
+  /* ═══════ DOM ═══════ */
+  const $ = id => document.getElementById(id);
+  const inp       = $('inp');
+  const domSelect = $('domSelect');
+  const sbar      = $('sbar');
+  const sDot      = $('sDot');
+  const sTxt      = $('sTxt');
+  const arToggle  = $('arToggle');
+  const welcomeDiv= $('welcomeDiv');
+  const mainDiv   = $('mainDiv');
+  const listDiv   = $('listDiv');
+  const countBadge= $('countBadge');
+  const detailDiv = $('detailDiv');
+  const btnCopy   = $('btnCopy');
+  const btnNuke   = $('btnNuke');
+
+  /* ═══════ INIT ═══════ */
+  (function init(){
+    const h = location.hash.slice(1);
+    if(h && h.includes('@')){ inp.value = decodeURIComponent(h); go(); }
+    const p = new URLSearchParams(location.search).get('email') || new URLSearchParams(location.search).get('e');
+    if(p && p.includes('@')){ inp.value = p; go(); }
+
+    if(!inp.value){
+      const saved = localStorage.getItem('teemps_addr');
+      if(saved) inp.value = saved;
+    }
+
+    inp.addEventListener('keydown', e => { if(e.key==='Enter') go(); });
+    document.addEventListener('keydown', handleKb);
+
+    // Ambil domain dari backend jika ada, lalu gabungkan dengan 6 domain default
+    fetchJSON('/api/domains').then(d => {
+      if(d?.domains?.length){
+        domains = [...new Set([...DEFAULT_DOMAINS, ...d.domains])];
+        renderDomainOptions();
+      }
+    }).catch(()=>{});
+  })();
+
+  function renderDomainOptions(){
+    if(!domSelect) return;
+    const current = domSelect.value;
+    domSelect.innerHTML = `<option value="random">🌐 Acak (${domains.length} Domain)</option>` +
+      domains.map(dom => `<option value="${esc(dom)}">@${esc(dom)}</option>`).join('');
+    if([...domSelect.options].some(o => o.value === current)) domSelect.value = current;
+  }
+
+  /* ═══════ GO ═══════ */
+  function go(){
+    const v = inp.value.trim().toLowerCase();
+    if(!v || !v.includes('@')){ toast('Masukkan alamat email yang valid!','err'); inp.focus(); return; }
+    addr = v;
+    localStorage.setItem('teemps_addr', addr);
+    history.replaceState(null, '', '#'+encodeURIComponent(addr));
+
+    welcomeDiv.style.display = 'none';
+    mainDiv.style.display = 'grid';
+    sbar.classList.add('show');
+    btnCopy.style.display = '';
+    btnNuke.style.display = '';
+    setTimeout(()=> mainDiv.classList.add('show'), 30);
+
+    prevCount = 0;
+    refresh();
+    startAR();
+    toast('Inbox aktif untuk ' + addr, 'ok');
+  }
+
+  /* ═══════ REFRESH ═══════ */
+  async function refresh(){
+    if(!addr) return;
+    sTxt.textContent = 'Memuat…';
+    try {
+      const d = await fetchJSON('/api/emails/' + encodeURIComponent(addr));
+      if(d.error){ toast(d.error,'err'); return; }
+
+      const isNew = d.count > prevCount && prevCount > 0;
+      mails = d.emails || [];
+      prevCount = d.count;
+      countBadge.textContent = d.count;
+      renderList();
+
+      if(isNew){
+        banner('📬 Email baru masuk!');
+        ding();
+      }
+
+      sTxt.textContent = 'Diperbarui: ' + new Date().toLocaleTimeString('id-ID');
+    } catch(e){
+      sTxt.textContent = 'Gagal memuat';
+    }
+  }
+
+  /* ═══════ EMAIL DECODER & PARSER (QUOTED-PRINTABLE / MIME / HTML) ═══════ */
+  function decodeQP(str){
+    if(!str) return '';
+    let s = str.replace(/=[ \t]*\r?\n/g, '');
+    s = s.replace(/(?:=[0-9A-Fa-f]{2})+/g, match => {
+      const hexes = match.split('=').slice(1);
+      const bytes = new Uint8Array(hexes.map(h => parseInt(h, 16)));
+      try {
+        return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+      } catch(e) {
+        return String.fromCharCode(...bytes);
+      }
+    });
+    return s;
+  }
+
+  function decodeBase64Utf8(b64){
+    try {
+      const clean = b64.replace(/[^A-Za-z0-9+/=]/g, '');
+      const bin = atob(clean);
+      const bytes = new Uint8Array(bin.length);
+      for(let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return new TextDecoder('utf-8', { fatal: false }).decode(bytes);
+    } catch(e) {
+      return b64;
+    }
+  }
+
+  function maybeDecodeEncoding(str, encHint = ''){
+    if(!str) return '';
+    let s = str.trim();
+    const enc = (encHint || '').toLowerCase();
+    if(enc.includes('base64')) return decodeBase64Utf8(s);
+    if(enc.includes('quoted-printable') || /=3[Dd]|=\r?\n|=[0-9A-Fa-f]{2}=[0-9A-Fa-f]{2}/.test(s)){
+      return decodeQP(s);
+    }
+    return s;
+  }
+
+  function unwrapEscapedHtml(str){
+    if(!str) return '';
+    let s = str;
+    for(let i = 0; i < 3; i++){
+      if(/&(?:lt|#60|#x3c);[!\s\/]*(?:doctype|html|head|body|meta|title|div|table|tr|td|p|span|a|img|style)\b/i.test(s)){
+        const doc = new DOMParser().parseFromString(s.replace(/<br\s*\/?>/gi, '\n'), 'text/html');
+        const extracted = doc.body ? doc.body.textContent : '';
+        if(extracted && extracted !== s){ s = extracted; continue; }
+      }
+      const probe = new DOMParser().parseFromString(s.replace(/<br\s*\/?>/gi, '\n'), 'text/html');
+      const probeText = probe.body ? probe.body.textContent : '';
+      if(/<[!\s\/]*(?:doctype|html|head|body|meta|title|div|table|tr|td|p|span|a|img|style)\b/i.test(probeText)){
+        s = probeText;
+        continue;
+      }
+      break;
+    }
+    return s;
+  }
+
+  function cleanMimeHeadersAndBoundaries(str){
+    if(!str) return '';
+    let s = str;
+    s = s.replace(/^(?:(?:Content-[A-Za-z-]+|MIME-Version):[^\r\n]*\r?\n)+\r?\n/i, '');
+    s = s.replace(/\r?\n--[A-Za-z0-9'()+_,-./:=?]+--\s*$/, '');
+    return s;
+  }
+
+  function extractMimeParts(raw){
+    if(!raw || !/Content-Type:\s*text\/(?:plain|html)/i.test(raw)) return null;
+    let plain = '', html = '';
+    const partRegex = /Content-Type:\s*text\/(plain|html)[^\r\n]*(?:\r?\n[^\r\n]+)*?\r?\n\r?\n([\s\S]*?)(?=\r?\n--[^\r\n]+|$)/gi;
+    let m;
+    while((m = partRegex.exec(raw)) !== null){
+      const headerPart = m[0].slice(0, m[0].indexOf(m[2]));
+      const type = m[1].toLowerCase();
+      const encMatch = headerPart.match(/Content-Transfer-Encoding:\s*([^\r\n;]+)/i);
+      const enc = encMatch ? encMatch[1].trim() : '';
+      const decoded = maybeDecodeEncoding(m[2], enc);
+      if(type === 'plain' && !plain) plain = decoded;
+      if(type === 'html' && !html) html = decoded;
+    }
+    return (plain || html) ? { plain, html } : null;
+  }
+
+  function htmlToPlainText(html){
+    if(!html) return '';
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    doc.querySelectorAll('head, style, script, noscript, svg, meta, title, link').forEach(el => el.remove());
+    doc.querySelectorAll('br').forEach(el => el.replaceWith('\n'));
+    doc.querySelectorAll('p, div, tr, li, h1, h2, h3, h4, h5, h6, blockquote, section, article, header, footer').forEach(el => {
+      el.prepend(doc.createTextNode('\n'));
+      el.append(doc.createTextNode('\n'));
+    });
+    doc.querySelectorAll('a[href]').forEach(a => {
+      const href = (a.getAttribute('href') || '').trim();
+      const txt = (a.textContent || '').trim();
+      if(href && /^https?:\/\//i.test(href) && txt !== href && !txt.includes(href)){
+        a.append(doc.createTextNode(` (${href})`));
+      }
+    });
+    const raw = doc.body ? (doc.body.textContent || '') : '';
+    return raw
+      .replace(/\u00a0/g, ' ')
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/\n[ \t]+/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
+
+  function parseEmailContent(m){
+    if(!m) return { html: '', text: '' };
+    if(m._parsed) return m._parsed;
+
+    let rawHtml = unwrapEscapedHtml(m.body_html || '');
+    let rawText = unwrapEscapedHtml(m.body_text || '');
+
+    const mimeFromText = extractMimeParts(rawText);
+    const mimeFromHtml = extractMimeParts(rawHtml);
+
+    if(mimeFromText || mimeFromHtml){
+      rawHtml = (mimeFromHtml && mimeFromHtml.html) || (mimeFromText && mimeFromText.html) || rawHtml;
+      rawText = (mimeFromText && mimeFromText.plain) || (mimeFromHtml && mimeFromHtml.plain) || rawText;
+    }
+
+    rawHtml = unwrapEscapedHtml(maybeDecodeEncoding(cleanMimeHeadersAndBoundaries(rawHtml)));
+    rawText = unwrapEscapedHtml(maybeDecodeEncoding(cleanMimeHeadersAndBoundaries(rawText)));
+
+    const looksLikeHtml = s => /<(?:!doctype|html|head|body|meta|title|div|table|p|span|a|img|style)\b/i.test(s);
+
+    if(!rawHtml && looksLikeHtml(rawText)){
+      rawHtml = rawText;
+    }
+
+    if(rawHtml){
+      const startIdx = rawHtml.search(/<(?:!doctype|html|head|meta|body|div|table|style|p)\b/i);
+      if(startIdx > 0) rawHtml = rawHtml.slice(startIdx);
+    }
+
+    let cleanText = rawText;
+    if(!cleanText || looksLikeHtml(cleanText)){
+      cleanText = htmlToPlainText(rawHtml || rawText);
+    } else {
+      const txtDoc = new DOMParser().parseFromString(cleanText, 'text/html');
+      cleanText = (txtDoc.body ? txtDoc.body.textContent : cleanText).trim();
+    }
+
+    m._parsed = { html: rawHtml.trim(), text: cleanText.trim() };
+    return m._parsed;
+  }
+
+  function wrapHtmlForIframe(html){
+    const baseInject = `<meta charset="UTF-8"><base target="_blank"><style>body{margin:0;padding:16px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#111;background:#fff;word-wrap:break-word;}</style>`;
+    if(/<head\b[^>]*>/i.test(html)){
+      return html.replace(/<head\b[^>]*>/i, match => match + baseInject);
+    }
+    return `<!DOCTYPE html><html><head>${baseInject}</head><body>${html}</body></html>`;
+  }
+
+  function renderHtmlIframe(container, htmlContent){
+    container.className = 'body-frame';
+    container.innerHTML = `<iframe id="hFrame" sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>`;
+    const f = $('hFrame');
+    if(f){
+      f.srcdoc = wrapHtmlForIframe(htmlContent);
+      f.onload = () => {
+        try {
+          const h = f.contentDocument.documentElement.scrollHeight || f.contentDocument.body.scrollHeight;
+          f.style.height = Math.max(450, h + 30) + 'px';
+        } catch(e){}
+      };
+    }
+  }
+
+  /* ═══════ RENDER LIST ═══════ */
+  function renderList(){
+    if(!mails.length){
+      listDiv.innerHTML = `
+        <div class="empty">
+          <div class="empty-ico">📭</div>
+          <h3 class="empty-h">Inbox Kosong</h3>
+          <p class="empty-p">Kirim email ke <strong>${esc(addr)}</strong> dan akan muncul di sini</p>
+        </div>`;
+      return;
+    }
+    listDiv.innerHTML = mails.map((m,i)=>{
+      const act = m.id===selId;
+      const rd = readSet.has(m.id);
+      const parsed = parseEmailContent(m);
+      const codes = extractCodes((m.subject || '') + ' ' + parsed.text);
+      return `
+        <div class="mail-item ${act?'active':''} ${!rd?'unread':''} ${i===0&&!rd?'flash':''}"
+             onclick="sel(${m.id})">
+          <div class="mail-from">${esc(m.from_name||m.from_address)}</div>
+          <div class="mail-subj">${esc(m.subject)}</div>
+          <div class="mail-time">${ago(m.received_at)}</div>
+          ${codes.length ? `
+          <div class="mail-codes">
+            <div class="codes-tag">🔑 Kode Terdeteksi</div>
+            <div class="codes-row">
+              ${codes.map(c=>`<span class="code-chip" onclick="event.stopPropagation();clip('${c}')" title="Klik untuk copy">${c}</span>`).join('')}
+            </div>
+          </div>` : ''}
+        </div>`;
+    }).join('');
+  }
+
+  /* ═══════ SELECT EMAIL ═══════ */
+  function sel(id){
+    selId = id;
+    readSet.add(id);
+    renderList();
+    const m = mails.find(x=>x.id===id);
+    if(!m) return;
+    const parsed = parseEmailContent(m);
+    const codes = extractCodes((m.subject || '') + ' ' + parsed.text);
+    const fromDisplay = m.from_name ? `${m.from_name} <${m.from_address}>` : m.from_address;
+
+    detailDiv.innerHTML = `
+      <div class="detail-head">
+        <h2 class="detail-subj">${esc(m.subject)}</h2>
+        <div class="meta-grid">
+          <div class="meta-row"><span class="meta-label">From</span><span class="meta-val">${esc(fromDisplay)}</span></div>
+          <div class="meta-row"><span class="meta-label">To</span><span class="meta-val">${esc(addr)}</span></div>
+          <div class="meta-row"><span class="meta-label">Date</span><span class="meta-val">${fmtDate(m.received_at)}</span></div>
+        </div>
+        ${codes.length ? `
+        <div class="mail-codes" style="margin-top:16px">
+          <div class="codes-tag">🔑 Kode Verifikasi / OTP</div>
+          <div class="codes-row">${codes.map(c=>`<span class="code-chip" onclick="clip('${c}')">${c}</span>`).join('')}</div>
+        </div>` : ''}
+        <div class="detail-btns">
+          <button class="btn btn-sm btn-glass" onclick="rawView(${m.id})">📄 Raw</button>
+          <button class="btn btn-sm btn-danger" onclick="delOne(${m.id})">🗑️ Hapus</button>
+        </div>
+      </div>
+      <div class="detail-body">
+        <div class="tabs">
+          <button class="tab active" onclick="showTab('html',this)">HTML</button>
+          <button class="tab" onclick="showTab('text',this)">Text</button>
+        </div>
+        <div class="body-frame" id="bodyFrame"></div>
+      </div>`;
+
+    const bf = $('bodyFrame');
+    if(parsed.html){
+      renderHtmlIframe(bf, parsed.html);
+    } else {
+      bf.className = 'body-frame text-mode';
+      bf.textContent = parsed.text || 'No content';
+    }
+  }
+
+  function showTab(t,el){
+    el.parentElement.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+    el.classList.add('active');
+    const m = mails.find(x=>x.id===selId);
+    if(!m) return;
+    const parsed = parseEmailContent(m);
+    const bf = $('bodyFrame');
+    if(t === 'html' && parsed.html){
+      renderHtmlIframe(bf, parsed.html);
+    } else {
+      bf.className = 'body-frame text-mode';
+      bf.textContent = parsed.text || 'No content';
+    }
+  }
+
+  function emptyDetail(){
+    detailDiv.innerHTML=`<div class="empty"><div class="empty-ico">👈</div><h3 class="empty-h">Pilih Email</h3><p class="empty-p">Klik email di daftar untuk melihat isinya</p></div>`;
+  }
+
+  /* ═══════ ACTIONS ═══════ */
+  async function genEmail(){
+    const adj=['swift','cool','dark','fast','epic','bold','wild','keen','calm','wise','free','star','neo','zen','ace','max','nova','flux','byte','hex'];
+    const noun=['wolf','fox','hawk','bear','lion','tiger','eagle','storm','blade','spark','ghost','pulse','wave','node','core','link','void','sage','reef','jade'];
+    const a=adj[Math.random()*adj.length|0], n=noun[Math.random()*noun.length|0], d=Math.random()*9999|0;
+
+    const selDom = domSelect ? domSelect.value : 'random';
+    const pickedDomain = (selDom && selDom !== 'random')
+      ? selDom
+      : (domains[Math.random()*domains.length|0] || DEFAULT_DOMAINS[0]);
+
+    inp.value=`${a}${n}${d}@${pickedDomain}`;
+    toast('Email random dibuat: @' + pickedDomain, 'ok');
+  }
+
+  function copyAddr(){
+    if(inp.value.trim()) clip(inp.value.trim());
+  }
+
+  async function delOne(id){
+    if(!confirm('Hapus email ini?')) return;
+    await fetchJSON('/api/email/'+id,{method:'DELETE'});
+    toast('Email dihapus','inf');
+    if(selId===id){ selId=null; emptyDetail(); }
+    refresh();
+  }
+
+  async function nukeAll(){
+    if(!confirm('Hapus SEMUA email di inbox ini?')) return;
+    await fetchJSON('/api/emails/'+encodeURIComponent(addr),{method:'DELETE'});
+    toast('Semua email dihapus','inf');
+    selId=null; emptyDetail(); refresh();
+  }
+
+  async function rawView(id){
+    const d=await fetchJSON('/api/email/'+id);
+    if(!d?.email) return;
+    let hdr=''; try{ const h=JSON.parse(d.email.raw_headers); hdr=Object.entries(h).map(([k,v])=>k+': '+v).join('\n'); }catch(e){}
+    const bf=$('bodyFrame');
+    bf.className='body-frame text-mode';
+    bf.textContent=hdr+'\n\n---\n\n'+(d.email.body_text||d.email.body_html||'');
+    detailDiv.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  }
+
+  /* ═══════ AUTO REFRESH ═══════ */
+  function startAR(){ stopAR(); if(arOn&&addr) arTimer=setInterval(refresh,REFRESH_MS); }
+  function stopAR(){ if(arTimer){ clearInterval(arTimer); arTimer=null; } }
+  function toggleAR(){
+    arOn=!arOn;
+    arToggle.classList.toggle('on',arOn);
+    sDot.classList.toggle('off',!arOn);
+    arOn ? (startAR(), sTxt.textContent='Auto-refresh aktif') : (stopAR(), sTxt.textContent='Auto-refresh mati');
+  }
+
+  /* ═══════ CODE EXTRACTION ═══════ */
+  function extractCodes(txt){
+    if(!txt) return [];
+    const out=new Set();
+    const pats=[
+      /(?:verification\s+code|kode\s+verifikasi|code|kode|otp|pin|token|sandi)(?:\s+(?:is|adalah|anda|kamu|your))?[:\s]+([A-Z0-9]{4,8})\b/gi,
+      /\b([0-9]{4,8})\b(?=.*(?:code|kode|otp|verif|pin))/gi,
+      /(?:is|are|your|ini|adalah)[:\s]+([0-9]{4,8})\b/gi,
+      /(?:enter|masukkan|gunakan|use)[:\s]+(?:the\s+)?(?:code\s+)?([A-Z0-9]{4,8})\b/gi,
+      /\b([0-9]{6})\b/g
+    ];
+    for(const p of pats){
+      let m; while((m=p.exec(txt))!==null){
+        const c=m[1].trim();
+        if(c.length>=4 && c.length<=8 && /\d/.test(c) && !/^(19|20)\d{2}$/.test(c) && !/^0+$/.test(c)){
+          out.add(c);
+        }
+      }
+    }
+    return [...out];
+  }
+
+  /* ═══════ HELPERS ═══════ */
+  async function fetchJSON(path, opts={}){
+    const r=await fetch(API_BASE+path, opts);
+    return r.json();
+  }
+
+  function esc(s){
+    if(!s) return '';
+    const d=document.createElement('div'); d.textContent=s; return d.innerHTML;
+  }
+  function ago(d){
+    const s=(Date.now()-new Date(d+'Z'))/1000;
+    if(s<60) return 'Baru saja';
+    if(s<3600) return (s/60|0)+' menit lalu';
+    if(s<86400) return (s/3600|0)+' jam lalu';
+    return (s/86400|0)+' hari lalu';
+  }
+  function fmtDate(d){
+    return new Date(d+'Z').toLocaleString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  }
+  async function clip(txt){
+    try{ await navigator.clipboard.writeText(txt); }catch(e){
+      const t=document.createElement('textarea'); t.value=txt; document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t);
+    }
+    toast('Disalin: '+txt,'ok');
+  }
+  function toast(msg,type='inf'){
+    const t=document.createElement('div');
+    t.className='toast '+type;
+    const ic={ok:'✅',err:'❌',inf:'ℹ️'};
+    t.innerHTML=`<span>${ic[type]||'ℹ️'}</span><span>${msg}</span>`;
+    $('toastBox').appendChild(t);
+    setTimeout(()=>{ t.classList.add('bye'); setTimeout(()=>t.remove(),300); },3000);
+  }
+  function banner(msg){
+    const b=document.documentElement ? document.createElement('div') : null;
+    if(!b) return;
+    b.className='new-banner';
+    b.textContent=msg;
+    document.body.appendChild(b);
+    setTimeout(()=>{ b.style.transition='all .3s'; b.style.opacity='0'; b.style.transform='translateX(-50%) translateY(-120%)'; setTimeout(()=>b.remove(),300); },3500);
+
+    if(Notification.permission==='granted') new Notification('TeeMPS',{body:msg});
+    else if(Notification.permission!=='denied') Notification.requestPermission();
+  }
+  function ding(){
+    try{
+      const c=new (window.AudioContext||window.webkitAudioContext)(), o=c.createOscillator(), g=c.createGain();
+      o.connect(g); g.connect(c.destination);
+      o.frequency.setValueAtTime(880,c.currentTime);
+      o.frequency.setValueAtTime(1100,c.currentTime+0.08);
+      o.frequency.setValueAtTime(880,c.currentTime+0.16);
+      g.gain.setValueAtTime(0.08,c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+0.3);
+      o.start(c.currentTime); o.stop(c.currentTime+0.3);
+    }catch(e){}
+  }
+  function handleKb(e){
+    if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+    if(e.key==='r'||e.key==='R'){ e.preventDefault(); refresh(); }
+    if(e.key==='Escape'){ selId=null; renderList(); emptyDetail(); }
+    if(e.key==='n'||e.key==='N'){ e.preventDefault(); inp.focus(); }
+  }
+  </script>
+</body>
+</html>
